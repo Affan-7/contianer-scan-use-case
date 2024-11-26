@@ -1,0 +1,17 @@
+storm.zookeeper.servers:
+  - "127.0.0.1"
+
+nimbus.seeds: ["127.0.0.1"]
+
+ui.port: 8080
+
+storm.local.dir: "/data"
+
+supervisor.slots.ports:
+  - 6700
+  - 6701
+  - 6702
+  - 6703
+
+ldap.authentication:
+  provider: "org.apache.storm.security.auth.authorizer.SimpleACLAuthorizer"

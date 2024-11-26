@@ -1,0 +1,49 @@
+name: Build and Scan Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_scan:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: test-image:latest
+      TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
+      TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db
+      TENANT_ID: 167
+      LABEL: container
+      ACCUKNOX_TOKEN: ${{ secrets.ACCUKNOX_TOKEN }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build Docker Image
+      run: docker build . -t ${{ env.IMAGE_NAME }}
+
+    - name: AccuKnox Container Scan
+      run: |
+        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+        -e "TRIVY_DB_REPOSITORY=${{ env.TRIVY_DB_REPOSITORY }}" \
+        -e "TRIVY_JAVA_DB_REPOSITORY=${{ env.TRIVY_JAVA_DB_REPOSITORY }}" \
+        accuknox/accuknox-container-scan:latest image ${{ env.IMAGE_NAME }} \
+        --format json >> /tmp/report.json
+
+    - name: Upload Report to AccuKnox
+      run: |
+        curl --location --request POST "https://cspm.demo.accuknox.com/api/v1/artifact/?tenant_id=${{ env.TENANT_ID }}&data_type=TR&save_to_s3=true&label_id=${{ env.LABEL }}" \
+        --header "Tenant-Id: ${{ env.TENANT_ID }}" \
+        --header "Authorization: Bearer ${{ env.ACCUKNOX_TOKEN }}" \
+        --form "file=@/tmp/report.json"
+
+    - name: Quality Gate Check
+      run: |
+        if grep -Eq "CRITICAL|HIGH" /tmp/report.json; then
+          echo "AccuKnox Scan has halted the deployment because it detected critical vulnerabilities"
+          exit 1
+        else
+          exit 0
+        fi
