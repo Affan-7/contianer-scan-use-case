@@ -1,0 +1,23 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- task: AccuKnox-container-scan@0
+  inputs:
+    dockerfileDirectory: './'
+    accuknoxDomain: 'cspm.demo.accuknox.com'
+    tenantId: '167'
+    accuknoxToken: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY3MDgxMzI2LCJqdGkiOiI4NjUwYjRmYTY3NzM0ZjBkOTZmMTE0NzJhYjM4ZmY3MSIsImlzcyI6ImNzcG0uZGVtby5hY2N1a25veC5jb20ifQ.GY3KnoUaT8MDBQVXbLu9c8omfTw5uU-Pv3YsAGlqQKq265ct12_5gh8HRhHE5pQBAmLaKgWwhMwkp8mpitFUiGf13x9JcGM8-BUV_JQsEmlayu5En-cn5isMwnr8_Q-bhV5JF70C1rcdbfDWPlGgwoJkWJtmjvf2XSL-zjGGaoIDn16IsINTJYjuJCPsnmE3RvdYDSocK7R92qf-0koOaMM4s4RviAoci8o3P7YRLv3xTziBNt3PuG_0bggk-gXST78UfcCzwLUKYgxWvR97TNRfJfme6vAmYy5GWao_ZPusOFbO0NCW36VOZClDonwXp_dnIEsWIPhfSn5FXG2AiA'
+    accuknoxLabel: 'test'
+    qualityGate: 'High, Critical'
